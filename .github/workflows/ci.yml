@@ -1,0 +1,52 @@
+name: Banking CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: simple_banking_app_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: simple_banking_app_test
+      DB_SYNCHRONIZE: 'true'
+      JWT_SECRET: ci-only-test-secret-do-not-use-in-production
+      FRONTEND_ORIGIN: http://localhost:3001
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+        working-directory: backend
+      - run: npm install
+        working-directory: frontend
+      - run: npm run build
+        working-directory: backend
+      - run: npm run build
+        working-directory: frontend
+      - run: npm run test:cov
+        working-directory: backend
+      - run: npm run db:protect
+        working-directory: backend
+      - run: npm run test:e2e
+        working-directory: backend
