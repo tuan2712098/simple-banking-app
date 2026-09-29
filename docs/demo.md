@@ -1,7 +1,7 @@
-# Cách mình demo
+# Kịch bản demo
 
 1. Chạy backend + frontend, mở `/health` xem trạng thái PostgreSQL.
-2. Đăng nhập user Tuan. Xem số tài khoản và số dư trên Dashboard.
+2. Đăng nhập tài khoản tuan@example.com. Xem số tài khoản và số dư trên Dashboard.
 3. Chuyển 100.000 VND cho An, mở lịch sử để thấy tiền ra. Đăng nhập An để thấy cùng giao dịch đó là tiền vào.
 4. Thử số tiền âm, vượt số dư và số tài khoản của chính mình. Backend phải từ chối.
 5. Thử cùng một Idempotency-Key 5 lần. Tổng số lần trừ tiền phải bằng 1.
@@ -13,4 +13,4 @@
 
 Chạy `npm run test`, `npm run test:cov` và `npm run test:e2e` với database `_test`. Kết quả coverage/benchmark phải lấy từ lần chạy thực tế, không điền số liệu giả vào báo cáo.
 
-Khi đẩy lên GitHub, file `.github/workflows/ci.yml` sẽ thử build hai phần và chạy các bộ test bằng PostgreSQL test riêng. Nếu CI báo đỏ thì cần xem log và sửa trước khi gửi mentor.
+Trên GitHub, file `.github/workflows/ci.yml` sẽ thử build hai phần và chạy các bộ test bằng PostgreSQL test riêng. Nếu CI báo đỏ thì cần xem log và sửa trước khi gửi mentor.

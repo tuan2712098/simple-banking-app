@@ -1,23 +1,19 @@
-# Đẩy source lên GitHub
+# Repository GitHub
 
-Giải nén ZIP, kiểm tra backend và frontend chạy được trên máy trước. Sau đó mở PowerShell ở thư mục gốc `Simple_Banking_App_Final` và chạy:
+Source Simple Banking App được lưu tại:
+https://github.com/tuan2712098/simple-banking-app
 
-```powershell
-git init
-git add .gitignore package.json backend
-git commit -m "Complete banking backend"
-git add frontend
-git commit -m "Build Next.js frontend"
-git add docs README.md .github
-git commit -m "Add tests and project documentation"
-```
+Repository gồm backend, frontend, tài liệu và bộ kiểm thử.
 
-Tạo repository GitHub riêng cho Banking App, không đặt chung repo Day 1–6. Gắn remote theo địa chỉ repo bạn vừa tạo rồi:
+Sau khi sửa code, chạy test và kiểm tra Git trước khi cập nhật:
 
 ```powershell
-git branch -M main
-git remote add origin https://github.com/USERNAME/REPOSITORY.git
-git push -u origin main
+git status --short
+git diff --check
+git add .
+git commit -m "Update banking app"
+git push origin main
 ```
 
-Lưu ý không push `.env`, `.env.local`, `node_modules`, `.next`, `dist` hoặc file mật khẩu. Sau khi đẩy xong, mở GitHub kiểm tra README, thư mục backend/frontend và lịch sử commit rồi mới gửi mentor.
+Không đưa file .env, mật khẩu, node_modules hoặc dữ liệu PostgreSQL lên GitHub.
+Kiểm tra GitHub Actions sau khi push để xác nhận bản cập nhật chạy thành công.

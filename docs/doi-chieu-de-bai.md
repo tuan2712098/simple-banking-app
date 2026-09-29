@@ -42,4 +42,4 @@
 | 7.2 Integration concurrency | `backend/test/banking.e2e-spec.ts` |
 | 7.3 Rollback khi lỗi giữa 2 bút toán | `backend/test/banking.e2e-spec.ts` |
 
-Các mục liên quan đến coverage và throughput cần chạy thử bằng PostgreSQL test trước khi ghi kết quả. Những điểm này chưa có số đo được xác nhận trong môi trường tạo ZIP.
+Kết quả kiểm thử ngày 30/09/2026: 132/132 Unit Test và 11/11 E2E Test thành công. Benchmark với 20 yêu cầu đồng thời cho mỗi phương pháp: cả pessimistic và optimistic locking đều có 10 giao dịch thành công, 10 giao dịch bị từ chối do không đủ số dư. Số dư cuối cùng chính xác; thời gian đo được là 407 ms, tương đương khoảng 49 request/giây cho mỗi phương pháp. Kết quả benchmark được ghi nhận từ một lần chạy.

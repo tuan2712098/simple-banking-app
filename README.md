@@ -1,7 +1,6 @@
 # Simple Banking App
 
-Đây là bài Simple Banking App mình làm trong đợt thực tập tại JITS. Mình làm tiếp từ project NestJS + React ban đầu, sau đó tích hợp phần bài tập bổ sung vào cùng một ứng dụng. Frontend bản cuối chuyển sang Next.js theo tài liệu bổ sung. Dự án chỉ dùng dữ liệu ngân hàng mô phỏng, không kết nối ngân hàng hay tiền thật.
-
+Simple Banking App là dự án thực tập tại JITS, xây dựng bằng NestJS, PostgreSQL và Next.js (React). Dự án gồm các chức năng ngân hàng cơ bản và phần mở rộng về xử lý giao dịch đồng thời, bảo mật, sổ cái và đối soát. Hệ thống sử dụng dữ liệu mô phỏng, không kết nối với ngân hàng thật.
 ## Công nghệ dùng
 
 - Backend: NestJS, TypeScript, TypeORM, PostgreSQL.
@@ -115,7 +114,7 @@ Remove-Item Env:DB_DATABASE
 Remove-Item Env:DB_SYNCHRONIZE
 ```
 
-`bench:locks` yêu cầu backend đang chạy và **cũng phải dùng database test**. Đừng chạy script benchmark trên data chính.
+`bench:locks` yêu cầu backend đang chạy và **cũng phải dùng database test**. Chạy backend với database test trên cổng 3100. Trong Terminal benchmark, đặt API_ORIGIN thành http://127.0.0.1:3100 và seed lại dữ liệu test sau khi chạy E2E. Không chạy benchmark trên database demo.
 
 ## Tài liệu
 

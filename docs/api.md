@@ -1,6 +1,6 @@
 # Danh sách API
 
-Backend mặc định chạy tại `http://localhost:3000`. Những API cần đăng nhập gửi `Authorization: Bearer <accessToken>`. Refresh token lưu trong cookie HTTP-only, không trả về body. Các API chuyển khoản nhận header `Idempotency-Key: <UUID>`.
+Backend mặc định chạy tại `http://localhost:3000`. Những API cần đăng nhập gửi `Authorization: Bearer <accessToken>`. Refresh token lưu trong cookie HTTP-only, không trả về body. Các API chuyển khoản, chuyển khoản hộ và nạp tiền yêu cầu header `Idempotency-Key: <UUID>`.
 
 | Method | Endpoint | Quyền | Chức năng |
 |---|---|---|---|

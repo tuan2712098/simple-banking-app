@@ -1,8 +1,8 @@
-# Nếu muốn dùng lại database đã làm hôm trước
+# Nâng cấp database từ phiên bản cũ
 
-Bản source cũ có database `simple_banking_app`, với ba bảng `users`, `accounts`, `transactions`. Mình không đưa file `.env` và dữ liệu PostgreSQL của máy vào ZIP.
+Bản source cũ có database `simple_banking_app`, với ba bảng `users`, `accounts`, `transactions`. File `.env` và dữ liệu PostgreSQL trên máy không được đưa lên GitHub.
 
-Mặc định bản mới chạy với database **riêng** `simple_banking_app_final` để không làm thay đổi data thử nghiệm cũ. Đây là cách dễ test nhất.
+Mặc định bản mới chạy với database **riêng** `simple_banking_app_final` để không làm thay đổi dữ liệu thử nghiệm cũ. Cách này giúp giữ nguyên dữ liệu thử nghiệm của phiên bản cũ.
 
 Nếu muốn nâng cấp trực tiếp database cũ:
 
