@@ -40,7 +40,7 @@ async function main() {
   const second = await dataSource.getRepository(Account).findOne({ where: { accountNumber: '900000000002' } });
   if (!first || !second) throw new Error('Seed test database first');
   const token = await login('tuan@example.com');
-  const runs = [];
+  const runs: Array<Awaited<ReturnType<typeof bench>> & { balances: { source: string; destination: string } }> = [];
   for (const path of ['/transactions/transfer', '/transactions/transfer-optimistic']) {
     await dataSource.query('UPDATE accounts SET balance = $1 WHERE id = $2', ['1000000.00', first.id]);
     await dataSource.query('UPDATE accounts SET balance = $1 WHERE id = $2', ['0.00', second.id]);
@@ -54,7 +54,7 @@ async function main() {
 }
 
 main().catch(async (error) => {
-  process.stderr.write(String(error) + '\n');
+  console.error(error);
   if (dataSource.isInitialized) await dataSource.destroy();
   process.exitCode = 1;
 });

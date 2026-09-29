@@ -3,6 +3,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request = require('supertest');
 import { AppModule } from '../src/app.module';
 import { DataSource } from 'typeorm';
+import { MonitoringService } from '../src/monitoring/monitoring.service';
+import { ReconciliationReport } from '../src/monitoring/entities/reconciliation-report.entity';
 import { Account } from '../src/accounts/entities/account.entity';
 import { Transaction, TransactionStatus } from '../src/transactions/entities/transaction.entity';
 import { LedgerEntry } from '../src/ledger/entities/ledger-entry.entity';
@@ -244,6 +246,60 @@ run('banking API with dedicated test PostgreSQL', () => {
       });
 
     expect(changedPayload.status).toBe(409);
+  }, 30000);
+  it('detects and records a reconciliation mismatch', async () => {
+    const accounts = db.getRepository(Account);
+    const reports = db.getRepository(ReconciliationReport);
+    const before = await accounts.findOneByOrFail({ id: sourceId });
+    const existingIds = new Set(
+      (await reports.find({ select: ['id'] })).map((report) => report.id),
+    );
+
+    try {
+      await db.query(
+        `UPDATE accounts
+         SET balance = (
+           SELECT COALESCE(SUM(
+             CASE
+               WHEN type = 'CREDIT' THEN amount
+               WHEN type = 'DEBIT' THEN -amount
+               ELSE 0
+             END
+           ), 0) + 7
+           FROM ledger_entries
+           WHERE account_id = $1
+         )
+         WHERE id = $1`,
+        [sourceId],
+      );
+
+      const changed = await accounts.findOneByOrFail({ id: sourceId });
+      const result = await app.get(MonitoringService).reconcile();
+      const mismatch = result.mismatches.find(
+        (row) => row.account_id === sourceId,
+      );
+
+      expect(mismatch).toBeDefined();
+      expect(mismatch!.stored_balance).toBe(changed.balance);
+      expect(mismatch!.stored_balance).not.toBe(mismatch!.ledger_balance);
+
+      const created = (await reports.find({ where: { accountId: sourceId } }))
+        .filter((report) => !existingIds.has(report.id));
+
+      expect(created).toHaveLength(1);
+      expect(created[0].storedBalance).toBe(changed.balance);
+      expect(created[0].ledgerBalance).toBe(mismatch!.ledger_balance);
+    } finally {
+      await accounts.update({ id: sourceId }, { balance: before.balance });
+
+      const createdIds = (await reports.find({ select: ['id'] }))
+        .map((report) => report.id)
+        .filter((id) => !existingIds.has(id));
+
+      if (createdIds.length > 0) {
+        await reports.delete(createdIds);
+      }
+    }
   }, 30000);
   it('restricts admin to admin role', async () => {
     const denied = await request(app.getHttpServer()).get('/admin/audit-logs').set('Authorization', `Bearer ${sourceToken}`);

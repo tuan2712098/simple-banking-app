@@ -40,12 +40,16 @@ export default function AdminPage() {
   const [ownerId, setOwnerId] = useState('');
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
+  const [tellerAmount, setTellerAmount] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const depositInFlight = useRef(false);
   const depositRequest = useRef<{ payload: string; key: string } | null>(null);
   const depositCompleted = useRef<string | null>(null);
+  const tellerInFlight = useRef(false);
+  const tellerRequest = useRef<{ payload: string; key: string } | null>(null);
+  const tellerCompleted = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     if (user?.role !== 'admin') return;
@@ -121,21 +125,56 @@ export default function AdminPage() {
 
   async function tellerTransfer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await execute(() => api.post('/transactions/teller-transfer', {
-      ownerId,
-      toAccountNumber: recipient,
-      amount,
-      description: 'Giao dịch tại quầy',
-    }, { headers: { 'Idempotency-Key': crypto.randomUUID() } }));
-  }
 
+    const payload = JSON.stringify([
+      ownerId.trim(),
+      recipient.trim(),
+      tellerAmount.trim(),
+    ]);
+
+    if (tellerInFlight.current || busy || tellerCompleted.current === payload) {
+      return;
+    }
+
+    tellerInFlight.current = true;
+
+    let request = tellerRequest.current;
+
+    if (!request || request.payload !== payload) {
+      request = { payload, key: crypto.randomUUID() };
+      tellerRequest.current = request;
+    }
+
+    try {
+      const response = await execute(() => api.post(
+        '/transactions/teller-transfer',
+        {
+          ownerId: ownerId.trim(),
+          toAccountNumber: recipient.trim(),
+          amount: tellerAmount.trim(),
+          description: 'Giao dịch tại quầy',
+        },
+        { headers: { 'Idempotency-Key': request.key } },
+      ));
+
+      if (response) {
+        tellerCompleted.current = payload;
+        tellerRequest.current = null;
+        setOwnerId('');
+        setRecipient('');
+        setTellerAmount('');
+      }
+    } finally {
+      tellerInFlight.current = false;
+    }
+  }
   return <ProtectedRoute allowRoles={['teller', 'admin']}><main className="dashboard-page"><Navigation title="Quản trị ngân hàng" />
     <section className="dashboard-content">
       {error && <div className="form-error">{error}</div>}
       {message && <div className="form-success">{message}</div>}
       <div className="two-col">
         <section className="page-card"><h2>Nạp tiền tại quầy</h2><form onSubmit={deposit}><label>Số tài khoản<input value={accountNumber} disabled={busy} onChange={(e) => { setAccountNumber(e.target.value); depositCompleted.current = null; }} required /></label><label>Số tiền<input value={amount} disabled={busy} onChange={(e) => { setAmount(e.target.value); depositCompleted.current = null; }} required /></label><button disabled={busy}>Nạp tiền</button></form></section>
-        <section className="page-card"><h2>Chuyển khoản hộ</h2><form onSubmit={tellerTransfer}><label>ID khách hàng<input value={ownerId} onChange={(e) => setOwnerId(e.target.value)} required /></label><label>Số tài khoản nhận<input value={recipient} onChange={(e) => setRecipient(e.target.value)} required /></label><label>Số tiền<input value={amount} onChange={(e) => setAmount(e.target.value)} required /></label><button disabled={busy}>Chuyển khoản</button></form></section>
+        <section className="page-card"><h2>Chuyển khoản hộ</h2><form onSubmit={tellerTransfer}><label>ID khách hàng<input value={ownerId} disabled={busy} onChange={(e) => { setOwnerId(e.target.value); tellerCompleted.current = null; }} required /></label><label>Số tài khoản nhận<input value={recipient} disabled={busy} onChange={(e) => { setRecipient(e.target.value); tellerCompleted.current = null; }} required /></label><label>Số tiền<input value={tellerAmount} disabled={busy} onChange={(e) => { setTellerAmount(e.target.value); tellerCompleted.current = null; }} required /></label><button disabled={busy}>Chuyển khoản</button></form></section>
       </div>
       {user?.role === 'admin' && <>
         <section className="page-card" style={{ marginTop: 24 }}><h2>Danh sách người dùng</h2>{users.map((item) => <div className="transaction-item" key={item.id}><div><strong>{item.fullName}</strong><p>{item.email} · {item.role} · {item.status}</p></div><button disabled={busy} onClick={() => void execute(() => api.patch(`/admin/users/${item.id}/status`, { status: item.status === 'active' ? 'locked' : 'active' }))}>{item.status === 'active' ? 'Khóa' : 'Mở khóa'}</button></div>)}</section>
